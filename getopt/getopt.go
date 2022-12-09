@@ -1,3 +1,6 @@
+// Package getopt provides simple command-line argument parsing, similar to
+// the C function getopt described by POSIX. Optional arguments are not
+// supported.
 package getopt
 
 import (
@@ -6,14 +9,23 @@ import (
 )
 
 const (
+	// The value EndOption is returned when a non-option argument
+	// is encountered or there are no arguments left.
 	EndOption = -1
 )
 
 var (
+	// ErrOption is returned when an invalid option is encountered.
 	ErrOption = errors.New("getopt: option not supported")
+	// ErrNoArg is returned when a required option argument is missing.
 	ErrNoArg  = errors.New("getopt: no argument given")
 )
 
+// A Parser holds the slice of strings containing the arguments given on the
+// command line (the first one being the program's name), the index of the
+// argument currently processed, the position of the next character to parse,
+// the options string and a boolean telling whether the last option has an
+// argument.
 type Parser struct {
 	args     []string // the arguments received by the program (os.Args)
 	optIndex int      // the index in args of the current option(s)
@@ -22,6 +34,8 @@ type Parser struct {
 	hasArg   bool     // whether the current option has an argument
 }
 
+// Args returns a slice of strings containing the arguments that were not
+// processed yet.
 func (p *Parser) Args() []string {
 	i := p.optIndex
 	if p.hasArg {
@@ -31,6 +45,10 @@ func (p *Parser) Args() []string {
 	return p.args[i:]
 }
 
+// Next returns the next option encountered as a rune and an error value. It
+// returns (EndOption, nil) when a non-option argument is seen or arguments
+// are exhausted. The error is not nil if the option is not valid or its
+// required argument is missing.
 func (p *Parser) Next() (rune, error) {
 	if p.hasArg {
 		// if there is an option argument, skip it
@@ -75,10 +93,17 @@ func (p *Parser) Next() (rune, error) {
 	return rune(b), nil
 }
 
+// NewParser returns a pointer to a Parser initialized with the given args
+// and opts. The first item of args will be skipped by the parser. This
+// allows the direct use of os.Args as args array.
+// The opts string has the same format as the one used by the C function
+// getopt described by POSIX. Optional arguments are not supported.
 func NewParser(args []string, opts string) *Parser {
 	return &Parser{args, 1, 0, opts, false}
 }
 
+// OptArg returns the argument of the last option returned by Next, or the
+// empty string if none was given.
 func (p *Parser) OptArg() string {
 	if !p.hasArg {
 		return ""
