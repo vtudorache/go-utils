@@ -14,7 +14,7 @@ func TestOptions(t *testing.T) {
 	p := NewParser(args, opts)
 	end := false
 	for !end {
-		switch o, e := p.Next(); o {
+		switch o, e := p.Option(); o {
 		case 'a':
 			aFlag = true
 		case 'b':
@@ -40,7 +40,7 @@ func TestBadOptions(t *testing.T) {
 	p := NewParser(args, opts)
 	end := false
 	for !end {
-		switch o, e := p.Next(); o {
+		switch o, e := p.Option(); o {
 		case 'a':
 			aFlag = true
 		case 'b':

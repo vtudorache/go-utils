@@ -45,11 +45,11 @@ func (p *Parser) Args() []string {
 	return p.args[i:]
 }
 
-// Next returns the next option encountered as a rune and an error value. It
+// Option returns the next option encountered as a rune and an error value. It
 // returns (EndOption, nil) when a non-option argument is seen or arguments
 // are exhausted. The error is not nil if the option is not valid or its
 // required argument is missing.
-func (p *Parser) Next() (rune, error) {
+func (p *Parser) Option() (rune, error) {
 	if p.hasArg {
 		// if there is an option argument, skip it
 		p.optIndex++
@@ -102,7 +102,7 @@ func NewParser(args []string, opts string) *Parser {
 	return &Parser{args, 1, 0, opts, false}
 }
 
-// OptArg returns the argument of the last option returned by Next, or the
+// OptArg returns the argument of the last option returned by Option, or the
 // empty string if none was given.
 func (p *Parser) OptArg() string {
 	if !p.hasArg {
