@@ -24,14 +24,15 @@ var (
 // A Parser holds the slice of strings containing the arguments given on the
 // command line (the first one being the program's name), the index of the
 // argument currently processed, the position of the next character to parse,
-// the options string and a boolean telling whether the last option has an
-// argument.
+// the options string, a boolean telling whether the last option has an
+// argument, a boolean telling whether all options have been parsed.
 type Parser struct {
 	args     []string // the arguments received by the program (os.Args)
 	optIndex int      // the index in args of the current option(s)
 	optPos   int      // the position in bytes of the option
 	opts     string   // the options definition string
 	hasArg   bool     // whether the current option has an argument
+	done     bool     // whether all options were parsed
 }
 
 // Args returns a slice of strings containing the arguments that were not
@@ -50,6 +51,9 @@ func (p *Parser) Args() []string {
 // are exhausted. The error is not nil if the option is not valid or its
 // required argument is missing.
 func (p *Parser) Option() (rune, error) {
+	if p.done {
+		return EndOption, nil
+	}
 	if p.hasArg {
 		// if there is an option argument, skip it
 		p.optIndex++
@@ -57,15 +61,18 @@ func (p *Parser) Option() (rune, error) {
 		p.hasArg = false
 	}
 	if p.optIndex >= len(p.args) {
+		p.done = true
 		return EndOption, nil
 	}
 	if p.optPos == 0 {
 		s := p.args[p.optIndex]
 		if len(s) <= 1 || s[0] != '-' {
+			p.done = true
 			return EndOption, nil
 		}
 		if len(s) == 2 && s[1] == '-' {
 			p.optIndex++
+			p.done = true
 			return EndOption, nil
 		}
 		p.optPos = 1
@@ -99,7 +106,7 @@ func (p *Parser) Option() (rune, error) {
 // The opts string has the same format as the one used by the C function
 // getopt described by POSIX. Optional arguments are not supported.
 func NewParser(args []string, opts string) *Parser {
-	return &Parser{args, 1, 0, opts, false}
+	return &Parser{args, 1, 0, opts, false, false}
 }
 
 // OptArg returns the argument of the last option returned by Option, or the
