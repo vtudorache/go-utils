@@ -18,3 +18,5 @@
 *.sublime-workspace
 
 .vscode/*
+
+.DS_Store
